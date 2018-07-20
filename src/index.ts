@@ -5,17 +5,7 @@ import connectionOptions from './connectionOptions';
 
 createConnection(connectionOptions)
   .then(async connection => {
-    let photo = new Photo();
-    photo.name = 'Me and Bears';
-    photo.description = 'I am near polar bears';
-    photo.filename = 'photo-with-bears.jpg';
-    photo.views = 1;
-    photo.isPublished = true;
-
     let photoRepository = connection.getRepository(Photo);
-
-    await photoRepository.save(photo);
-    console.log('Photo has been saved');
 
     let allPhotos = await photoRepository.find();
     console.log('All photos from the db: ', allPhotos);
@@ -37,5 +27,18 @@ createConnection(connectionOptions)
     let [findAllPhotos, findPhotosCount] = await photoRepository.findAndCount();
     console.log('All photos: ', findAllPhotos);
     console.log('Photos count: ', findPhotosCount);
+
+    let photoToUpdate = await photoRepository.findOne(1);
+    photoToUpdate.name = 'Me, my friends and polar bears';
+    await photoRepository.save(photoToUpdate);
+
+    let modifiedPhoto = await photoRepository.findOne(1);
+    console.log('Modified photo from the db: ', modifiedPhoto);
+
+    let photoToRemove = await photoRepository.findOne(1);
+    await photoRepository.remove(photoToRemove);
+
+    let photosAfterRemove = await photoRepository.find();
+    console.log('All photos from the db after remove: ', photosAfterRemove);
   })
   .catch(error => console.log(error));
