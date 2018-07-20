@@ -2,43 +2,27 @@ import 'reflect-metadata';
 import { createConnection } from 'typeorm';
 import { Photo } from './entity/Photo';
 import connectionOptions from './connectionOptions';
+import { PhotoMetadata } from './entity/PhotoMetadata';
 
 createConnection(connectionOptions)
   .then(async connection => {
     let photoRepository = connection.getRepository(Photo);
+    let metadataRepository = connection.getRepository(PhotoMetadata);
 
-    let allPhotos = await photoRepository.find();
-    console.log('All photos from the db: ', allPhotos);
+    let photo = await photoRepository.findOne(1);
 
-    let firstPhoto = await photoRepository.findOne(1);
-    console.log('First photo from the db: ', firstPhoto);
+    let metadata = new PhotoMetadata();
+    metadata.height = 640;
+    metadata.width = 480;
+    metadata.compressed = true;
+    metadata.comment = 'cybershoot';
+    metadata.orientation = 'portait';
+    metadata.photo = photo;
 
-    let meAndBearsPhoto = await photoRepository.findOne({
-      name: 'Me and Bears'
-    });
-    console.log('Me and Bears photo from the db: ', meAndBearsPhoto);
+    await metadataRepository.save(metadata);
 
-    let allViewedPhotos = await photoRepository.find({ views: 1 });
-    console.log('All viewed photos: ', allViewedPhotos);
-
-    let allPublishedPhotos = await photoRepository.find({ isPublished: true });
-    console.log('All published photos: ', allPublishedPhotos);
-
-    let [findAllPhotos, findPhotosCount] = await photoRepository.findAndCount();
-    console.log('All photos: ', findAllPhotos);
-    console.log('Photos count: ', findPhotosCount);
-
-    let photoToUpdate = await photoRepository.findOne(1);
-    photoToUpdate.name = 'Me, my friends and polar bears';
-    await photoRepository.save(photoToUpdate);
-
-    let modifiedPhoto = await photoRepository.findOne(1);
-    console.log('Modified photo from the db: ', modifiedPhoto);
-
-    let photoToRemove = await photoRepository.findOne(1);
-    await photoRepository.remove(photoToRemove);
-
-    let photosAfterRemove = await photoRepository.find();
-    console.log('All photos from the db after remove: ', photosAfterRemove);
+    console.log(
+      'Metadata is saved, and relation between metadata and photo is created in the database too'
+    );
   })
   .catch(error => console.log(error));
